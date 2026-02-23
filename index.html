@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Solution Exercice 03 - Cinématique du Solide</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root { --primary: #00d4ff; --bg-side: #111116; --bg-main: #0a0a0c; --text: #e0e0e0; }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: var(--bg-main); display: flex; color: var(--text); }
+        
+        /* Panneau de solution détaillé */
+        #solution-panel {
+            width: 500px; height: 100vh; background: var(--bg-side);
+            overflow-y: auto; padding: 30px; border-right: 1px solid #3a3a4a; box-sizing: border-box;
+        }
+
+        /* Conteneur Simulation 3D */
+        #simulation-container { flex-grow: 1; position: relative; }
+
+        /* Interface de contrôle */
+        #ui-controls {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(20, 20, 25, 0.9); padding: 20px; border-radius: 12px;
+            border: 1px solid #3a3a4a; width: 260px; backdrop-filter: blur(5px);
+        }
+
+        h2, h3 { color: var(--primary); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .math-block { background: #1a1a24; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary); font-size: 0.9em; }
+        .control-group { margin-bottom: 15px; }
+        label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 5px; color: #bbb; }
+        input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+        
+        .legend { font-size: 0.8em; line-height: 1.6; margin-top: 15px; border-top: 1px solid #333; pt: 10px; }
+        .ref-item { display: flex; align-items: center; margin-bottom: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="solution-panel">
+    <h2>Solution : Exercice 03</h2>
+    <p>Système : Tige \(OO_2\) de longueur \(L\) et plaque \(2a \times 2b\).</p>
+
+    <div class="math-block">
+        <h3>1. Matrices de Passage</h3>
+        Matrice de passage de \(R_2\) vers \(R_1\) :
+        \[ \begin{pmatrix} \vec{x_1} \\ \vec{y_1} \\ \vec{z_1} \end{pmatrix} = \begin{pmatrix} \cos\theta & 0 & \sin\theta \\ 0 & 1 & 0 \\ -\sin\theta & 0 & \cos\theta \end{pmatrix} \begin{pmatrix} \vec{x_2} \\ \vec{y_2} \\ \vec{z_2} \end{pmatrix} \]
+        Matrice de passage de \(R_3\) vers \(R_2\) :
+        \[ \begin{pmatrix} \vec{x_3} \\ \vec{y_3} \\ \vec{z_3} \end{pmatrix} = \begin{pmatrix} \cos\phi & \sin\phi & 0 \\ -\sin\phi & \cos\phi & 0 \\ 0 & 0 & 1 \end{pmatrix} \begin{pmatrix} \vec{x_2} \\ \vec{y_2} \\ \vec{z_2} \end{pmatrix} \]
+    </div>
+
+    <div class="math-block">
+        <h3>2. Vecteur rotation \(\vec{\Omega}(R_3/R_0)\)</h3>
+        \[ \vec{\Omega}_3^0 = \vec{\Omega}_3^2 + \vec{\Omega}_2^1 + \vec{\Omega}_1^0 = \dot{\phi}\vec{z_2} + \dot{\theta}\vec{y_2} + \dot{\psi}\vec{z_1} \]
+        Dans le repère \(R_2\) :
+        \[ \vec{\Omega}_3^0 = \begin{pmatrix} -\dot{\psi}\sin\theta \\ \dot{\theta} \\ \dot{\phi} + \dot{\psi}\cos\theta \end{pmatrix}_{R_2} \]
+    </div>
+
+    <div class="math-block">
+        <h3>3. Vitesse \(\vec{V}^0(O_2)\)</h3>
+        Par dérivation (\(\vec{OO_2} = L\vec{z_2}\)) :
+        \[ \vec{V}^0(O_2) = \vec{\Omega}_2^0 \wedge \vec{OO_2} = \begin{pmatrix} L\dot{\theta} \\ L\dot{\psi}\sin\theta \\ 0 \end{pmatrix}_{R_2} \]
+    </div>
+
+    <div class="math-block">
+        <h3>4. Vitesse du point A</h3>
+        \[ \vec{V}^0(A) = \vec{V}^0(O_2) + \vec{\Omega}_3^0 \wedge \vec{O_2A} \]
+        Avec \(O_2A = a\vec{x_3} = a\cos\phi\vec{x_2} + a\sin\phi\vec{y_2}\).
+    </div>
+
+    <div class="math-block">
+        <h3>5. Accélération \(\vec{\gamma}^0(O_2)\)</h3>
+        \[ \vec{\gamma}^0(O_2) = \begin{pmatrix} -L\dot{\psi}^2\sin\theta\cos\theta \\ 2L\dot{\psi}\dot{\theta}\cos\theta \\ -L\dot{\theta}^2 - L\dot{\psi}^2\sin^2\theta \end{pmatrix}_{R_2} \]
+    </div>
+</div>
+
+<div id="simulation-container">
+    <div id="ui-controls">
+        <h3>Commandes 3D</h3>
+        <div class="control-group">
+            <label>Précession (ψ̇) <span id="v-psi">0.5</span></label>
+            <input type="range" id="psiSpd" min="0" max="2" step="0.01" value="0.5">
+        </div>
+        <div class="control-group">
+            <label>Nutation (θ) <span id="v-theta">40°</span></label>
+            <input type="range" id="thetaVal" min="0" max="1.57" step="0.01" value="0.7">
+        </div>
+        <div class="control-group">
+            <label>Propre (φ̇) <span id="v-phi">2.0</span></label>
+            <input type="range" id="phiSpd" min="0" max="5" step="0.1" value="2">
+        </div>
+
+        <div class="legend">
+            <div class="ref-item"><div class="dot" style="background:#fff"></div> R₀ (Fixe)</div>
+            <div class="ref-item"><div class="dot" style="background:#ff0"></div> R₁ (ψ / z₀)</div>
+            <div class="ref-item"><div class="dot" style="background:#0f0"></div> R₂ (θ / y₁) - Tige</div>
+            <div class="ref-item"><div class="dot" style="background:#f0f"></div> R₃ (φ / z₂) - Plaque</div>
+        </div>
+    </div>
+</div>
+
+<script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- INITIALISATION ---
+    const container = document.getElementById('simulation-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, container.clientWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    camera.position.set(8, 6, 10);
+    controls.enableDamping = true;
+
+    // Helper pour labels
+    function makeLabel(text, color) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 64; canvas.height = 64;
+        ctx.fillStyle = color; ctx.font = 'bold 40px Arial'; ctx.textAlign = 'center';
+        ctx.fillText(text, 32, 48);
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas) }));
+        sprite.scale.set(0.6, 0.6, 1);
+        return sprite;
+    }
+
+    function addAxes(group, suffix, color, size) {
+        const dirs = [new THREE.Vector3(1,0,0), new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1)];
+        const names = ['x','y','z'];
+        dirs.forEach((dir, i) => {
+            group.add(new THREE.ArrowHelper(dir, new THREE.Vector3(0,0,0), size, [0xff4444,0x44ff44,0x4444ff][i], 0.2, 0.1));
+            const lbl = makeLabel(names[i]+suffix, color);
+            lbl.position.copy(dir).multiplyScalar(size * 1.2);
+            group.add(lbl);
+        });
+    }
+
+    // --- HIERARCHIE DES REPERES ---
+    const R0 = new THREE.Group(); addAxes(R0, '₀', '#ffffff', 3); scene.add(R0);
+    const R1 = new THREE.Group(); addAxes(R1, '₁', '#ffff00', 2.5); scene.add(R1);
+    const R2 = new THREE.Group(); addAxes(R2, '₂', '#00ff00', 2); R1.add(R2);
+
+    // Tige OO2
+    const L = 5;
+    const tige = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, L), new THREE.MeshPhongMaterial({ color: 0x888888 }));
+    tige.rotation.x = Math.PI/2; tige.position.z = L/2;
+    R2.add(tige);
+
+    // Plaque au point O2
+    const R3 = new THREE.Group(); R3.position.z = L; addAxes(R3, '₃', '#ff00ff', 1.5); R2.add(R3);
+    const plaque = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 0.1), new THREE.MeshPhongMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.7 }));
+    R3.add(plaque);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const light = new THREE.PointLight(0xffffff, 100); light.position.set(5, 10, 5); scene.add(light);
+
+    // --- ANIMATION ---
+    let psi = 0, phi = 0;
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta();
+        
+        const vPsi = parseFloat(document.getElementById('psiSpd').value);
+        const vTheta = parseFloat(document.getElementById('thetaVal').value);
+        const vPhi = parseFloat(document.getElementById('phiSpd').value);
+
+        document.getElementById('v-psi').innerText = vPsi.toFixed(2);
+        document.getElementById('v-theta').innerText = (vTheta * 180 / Math.PI).toFixed(0) + '°';
+        document.getElementById('v-phi').innerText = vPhi.toFixed(1);
+
+        psi += vPsi * dt; phi += vPhi * dt;
+        
+        R1.rotation.z = psi;    // Rotation ψ autour de z0
+        R2.rotation.y = vTheta; // Rotation θ autour de y1
+        R3.rotation.z = phi;    // Rotation φ autour de z2
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.onresize = () => {
+        camera.aspect = container.clientWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, window.innerHeight);
+    };
+</script>
+</body>
+</html>
